@@ -148,9 +148,12 @@ def do_copy(source, target):
     # All set, do the copy
     file_count = 0
     error_count = 0
+    directory_count = 0
     for (source, target) in copy_list:
         (files, errors) = copy_dir(source, target)
-        print("Directory copied.", files, "files,", errors, "errors.")
+        directory_count += 1
+        print("Directory copied.", files, "files,", errors, "errors.",)
+        print("Completed", directory_count, "of", len(copy_list), "directories")
         print() # blank line
         file_count += files
         error_count += errors

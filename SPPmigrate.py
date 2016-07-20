@@ -103,8 +103,8 @@ def copy_dir(source, target):
                          os.path.join(target, file_name)) == False:
                 error_count += 1
 
-    # File count is zero? No files in directory: create it.
-    if file_count == 0:
+    # File count is zero? No files in directory: create it if it doesn't exist
+    if file_count == 0 and os.path.isdir(target) == False:
         print("Creating empty directory:", target)
         os.mkdir(target)
 
@@ -129,7 +129,7 @@ def do_copy(source, target):
         print(directory[0], directory[1], "files")
         file_count += directory[1]
     print("Total", file_count, "files.")
-    if query_yes_no('Continue? [y|n]') == False:
+    if query_yes_no('Continue? [y|n]') == 'n':
         return(0,0)
 
     # Add targets for create copy list
@@ -142,14 +142,31 @@ def do_copy(source, target):
     print("Target directory:", target_root)
     for entry in copy_list:
         print("Will copy", entry[0], "to", entry[1])
-    if query_yes_no('Continue? [y|n]') == False:
+    if query_yes_no('Continue? [y|n]') == 'n':
         return(0,0)
+
+    # Check for already existing target directories
+    exist_count = 0
+    skip_existing = False
+    for entry in copy_list:
+        if os.path.isdir(entry[1]):
+            print("Note: directory", entry[1], "already exists.")
+            exist_count += 1
+    if exist_count > 0:
+        print(exist_count, "target directories already exist.")
+        if query_yes_no('Skip copying to already existing directories? [y/n]') == 'y':
+            skip_existing = True
+            print("Will skip", exist_count, "directories")
 
     # All set, do the copy
     file_count = 0
     error_count = 0
     directory_count = 0
     for (source, target) in copy_list:
+        if skip_existing == True and os.path.isdir(target):
+            print(target, "already exists - skipping")
+            continue
+            
         (files, errors) = copy_dir(source, target)
         directory_count += 1
         print("Directory copied.", files, "files,", errors, "errors.",)
